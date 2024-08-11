@@ -30,10 +30,10 @@ export const createProducer = async () => {
     return producer;
 }
 
-export const produceMessage = async (message: string, topic: string) => {
+export const produceMessage = async (message: string, room: string, topic: string) => {
     const _producer = await createProducer();
     await _producer?.send({
-        messages: [{ key: `message-${Date.now()}`, value: message }],
+        messages: [{ key: `message-${Date.now()}`, value: JSON.stringify({ message, room }) }],
         topic: topic,
     })
     return true;

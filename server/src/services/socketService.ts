@@ -22,11 +22,15 @@ class SocketService {
     public async init() {
         const io = this._io;
         io.on('connect', (socket) => {
-            socket.on('event:message', async ({ message }: { message: string }) => {
-                console.log(message);
-                await produceMessage(message, "MESSAGES-SOCKET")
 
+            socket.on('event:join-room', async ({ room }: { room: string }) => {
+                console.log("Joining room : ", room);
+                socket.join(room);
 
+            })
+            socket.on('event:message', async ({ message , room }: { message: string, room: string }) => {
+                console.log("Message received : ", message, " in room : ", room);
+                await produceMessage(message, room, "MESSAGES-SOCKET")
             })
         })
         if (this._consumer) {
@@ -42,9 +46,8 @@ class SocketService {
                         return;
                     }
                     try {
-                        console.log("emitting message : ", message?.value?.toString());
-                        
-                        io.emit('message', message?.value?.toString());
+                        console.log("emitting message : ", message?.value?.toString(), " to room : ", JSON.parse(message?.value?.toString()).room);
+                        io.to(JSON.parse(message?.value?.toString()).room).emit('message', JSON.parse(message?.value?.toString()).message);
                     } catch (e) {
                         console.log(e, "Something went wrong");
                         pause();
